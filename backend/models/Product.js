@@ -43,6 +43,11 @@ const Product = sequelize.define('Product', {
     type: DataTypes.BOOLEAN,
     defaultValue: false,
     allowNull: true
+  },
+  isVerified:{
+    type:DataTypes.BOOLEAN,
+    defaultValue:false,
+    allowNull:true
   }
 });
 
