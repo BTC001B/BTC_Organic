@@ -17,6 +17,7 @@ exports.searchProduct = async (req, res) => {
       }
     });
     res.json({
+      userid : userId,
       query: q,
       count: products.length,
       results: products,
@@ -24,6 +25,23 @@ exports.searchProduct = async (req, res) => {
   } catch (err) {
     console.error("Search error:", err);
     res.status(500).json({ message: "Search failed" });
+  }
+};
+
+exports.getSearchHistoryByUserId = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const history = await SearchHistory.findAll({ where: { userId: id } });
+
+    if (!history || history.length === 0) {
+      return res.status(404).json({ error: "History not found" });
+    }
+
+    res.status(200).json({ data: history });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error occurred while fetching history" });
   }
 };
 

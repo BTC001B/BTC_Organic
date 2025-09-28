@@ -4,6 +4,8 @@ const productController = require('../controllers/productController');
 const authMiddleware = require("../middlewares/authMiddleware")
 
 // CRUD
+router.get("/similarproducts/:id",productController.getSimilarProductsInCategory);
+router.get("/verified",productController.getAllVerified);
 router.get('/trends',productController.getTrends);
 router.post('/', productController.createProduct);
 router.get('/', productController.getAllProducts);

@@ -1,6 +1,10 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const Order = require("../models/Order");
+const Wishlist = require("../models/Wishlist");
+const SearchHistory = require("../models/SearchHistory");
+const RecentlyViewed = require("../models/RecentlyViewed");
 
 // Create new user (Register)
 exports.createUser = async (req, res) => {
@@ -57,8 +61,6 @@ exports.loginUser = async (req, res) => {
 // Logout user (Client-side implementation)
 exports.logoutUser = async (req, res) => {
   try {
-    // For JWT, logout is handled client-side by deleting token.
-    // Server-side, you can blacklist todkfjkens if needed (not implemented here).
     res.json({ message: "Logout successful. Please delete token on client side." });
   } catch (err) {
     console.log("Logout Error:", err);
@@ -93,7 +95,7 @@ exports.getUserById = async (req, res) => {
 // Update user
 exports.updateUser = async (req, res) => {
   const { id } = req.params;
-  const { name, email, password, phone, address } = req.body;
+  const { name, email, password, phone, address, imageurl } = req.body;
   try {
     const user = await User.findByPk(id);
     if (!user) return res.status(404).json({ message: "User not found" });
@@ -117,13 +119,14 @@ exports.deleteUser = async (req, res) => {
     const user = await User.findByPk(id);
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    await user.destroy();
-    res.json({ message: "User deleted successfully" });
+    await user.destroy();  // 👈 will also delete carts now
+    res.json({ message: "User and related carts deleted successfully" });
   } catch (err) {
     console.log("Delete User Error:", err);
     res.status(500).json({ message: err.message });
   }
 };
+
 
 exports.login = async (req, res) => {
   const { email, password } = req.body;
@@ -144,5 +147,27 @@ exports.login = async (req, res) => {
   } catch (err) {
     console.log("Login Error:", err);
     res.status(500).json({ message: err.message });
+  }
+};
+
+exports.clearAccountData = async (req, res) => {
+  try {
+    const userId = req.user.id; // fetched from JWT middleware
+
+    // Delete dependent data first (respect FK constraints)
+    await Promise.all([
+      Order.destroy({ where: { userId } }),
+      Wishlist.destroy({ where: { userId } }),
+      SearchHistory.destroy({ where: { userId } }),
+      RecentlyViewed.destroy({ where: { userId } })
+    ]);
+
+    // Finally delete the user
+    await User.destroy({ where: { id: userId } });
+
+    res.status(200).json({ message: "Account and all related data cleared successfully." });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to clear account data" });
   }
 };

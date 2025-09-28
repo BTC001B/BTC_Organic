@@ -165,3 +165,29 @@ exports.getAllVerified = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+
+exports.getSimilarProductsInCategory = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const item = await Product.findByPk(id);
+    if (!item) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+
+    const cid = item.categoryId;
+    const prod = await Product.findAll({
+      where: { categoryId: cid, id: { [Op.ne]: id } } 
+    });
+
+    if (!prod || prod.length === 0) {
+      return res.status(404).json({ error: "No similar products found" });
+    }
+
+    res.json({ data: prod });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error occurred while finding similar products" });
+  }
+};

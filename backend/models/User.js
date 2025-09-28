@@ -27,6 +27,10 @@ const User = sequelize.define('User', {
   type: DataTypes.STRING,
   allowNull: false,
   defaultValue: 'user' // or 'admin'
+},
+imageurl:{
+  type:DataTypes.STRING,
+  allowNull:true
 }
 
 });

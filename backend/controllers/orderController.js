@@ -50,3 +50,35 @@ exports.createOrder = async (req, res) => {
     res.status(500).json({ message: "Failed to create order", error: err.message });
   }
 };
+
+exports.getUserOrders = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const orders = await Order.findAll({
+      where: { userId },
+      include: [
+        {
+          model: OrderItem,
+          as: "OrderItems", // must match Order.hasMany(..., as: "OrderItems")
+          include: [
+            {
+              model: Product,
+              attributes: ["id", "name", "price", "imageUrl", "stock"]
+            }
+          ]
+        }
+      ],
+      order: [["createdAt", "DESC"]] // newest orders first
+    });
+
+    if (!orders || orders.length === 0) {
+      return res.status(404).json({ message: "No orders found" });
+    }
+
+    res.status(200).json({ orders });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to fetch orders", error: err.message });
+  }
+};

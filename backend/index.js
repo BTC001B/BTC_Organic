@@ -1,6 +1,19 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
+
+
+const User = require("./models/User");
+const Product = require("./models/Product");
+const Cart = require("./models/Cart");
+const Order = require("./models/Order");
+const OrderItem = require("./models/OrderItem");
+const Wishlist = require("./models/Wishlist");
+const SearchHistory = require("./models/SearchHistory");
+const RecentlyViewed = require("./models/RecentlyViewed");
+
+
+
 const sequelize = require('./db');
 const userRoutes = require('./routes/userRoutes');
 const productRoutes = require('./routes/productRoutes');
@@ -35,6 +48,37 @@ app.use('/api/coupons', couponRouters);
 app.use('/api/admin', adminRoutes);
 app.use('/api/search',searchRoutes);
 app.use("/api/order",orderRoutes);
+
+
+User.hasMany(Order, { foreignKey: "userId" });
+Order.belongsTo(User, { foreignKey: "userId" });
+
+User.hasMany(Cart, { foreignKey: "userId" });
+Cart.belongsTo(User, { foreignKey: "userId" });
+
+User.hasMany(Wishlist, { foreignKey: "userId" });
+Wishlist.belongsTo(User, { foreignKey: "userId" });
+
+User.hasMany(SearchHistory, { foreignKey: "userId" });
+SearchHistory.belongsTo(User, { foreignKey: "userId" });
+
+User.hasMany(RecentlyViewed, { foreignKey: "userId" });
+RecentlyViewed.belongsTo(User, { foreignKey: "userId" });
+
+// Product Relations
+Product.hasMany(OrderItem, { foreignKey: "productId" });
+OrderItem.belongsTo(Product, { foreignKey: "productId" });
+
+Product.hasMany(Cart, { foreignKey: "productId" });
+Cart.belongsTo(Product, { foreignKey: "productId" });
+
+Product.hasMany(Wishlist, { foreignKey: "productId" });
+Wishlist.belongsTo(Product, { foreignKey: "productId" });
+
+// Order Relations
+Order.hasMany(OrderItem, { foreignKey: "orderId", as: "OrderItems" });
+OrderItem.belongsTo(Order, { foreignKey: "orderId" });
+
 
 
 const PORT = process.env.PORT || 3004;
